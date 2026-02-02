@@ -1,0 +1,4 @@
+google-adk
+azure-monitor-opentelemetry-exporter
+litellm>=1.75.5
+pypdf
