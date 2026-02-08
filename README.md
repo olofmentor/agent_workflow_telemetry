@@ -35,9 +35,12 @@ The workflow expects these environment variables:
 - `MODEL` (default: `gemini-2.0-flash`)
 - `DOCUMENTS_DIR` (default: `./input_files`)
 - `MAX_FILE_CHARS` (default: `12000`)
-- `LOG_DEST` (`local` or `azure`)
+- `LOG_DEST` (`local` or `databricks`)
 - `LOG_DIR` (default: `./logs`, for local markdown logs)
-- `APPLICATIONINSIGHTS_CONNECTION_STRING` (required for Azure logging)
+- `DATABRICKS_HOST` (Databricks workspace base URL)
+- `DATABRICKS_TOKEN` (Databricks token for OTLP ingestion)
+- `DATABRICKS_OTLP_ENDPOINT` (optional override for OTLP endpoint)
+- `DATABRICKS_MLFLOW_EXPERIMENT_ID` (optional MLflow experiment ID)
 - `OPENAI_API_BASE` (for LM Studio, e.g. `http://localhost:1234/v1`)
 - `OPENAI_API_KEY` (for LM Studio, use any non-empty value)
 ## Document support
@@ -52,7 +55,8 @@ The workflow expects these environment variables:
 2. Install dependencies: `pip install -r requirements.txt`.
 3. Configure logging:
    - For local: `LOG_DEST=local` and `LOG_DIR=./logs`.
-   - For Azure: `LOG_DEST=azure` and set `APPLICATIONINSIGHTS_CONNECTION_STRING`.
+   - For Databricks: `LOG_DEST=databricks`, set `DATABRICKS_HOST` and
+     `DATABRICKS_TOKEN` (optional `DATABRICKS_MLFLOW_EXPERIMENT_ID`).
 4. From the parent directory of this repo, run `adk run SE_workflow_test`.
 5. Provide the user question as the initial message.
 6. If the clarifier asks questions, pass your answers by setting

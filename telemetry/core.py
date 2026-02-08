@@ -11,11 +11,11 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 try:
-    from azure.monitor.opentelemetry.exporter import (
-        AzureMonitorTraceExporter,
+    from opentelemetry.exporter.otlp.proto.http.trace_exporter import (
+        OTLPSpanExporter,
     )
 except Exception:  # pragma: no cover - optional dependency
-    AzureMonitorTraceExporter = None
+    OTLPSpanExporter = None
 
 
 def _utc_now() -> str:
@@ -70,17 +70,24 @@ class LocalMarkdownSink(TelemetrySink):
             handle.write("\n")
 
 
-class AzureOtelSink(TelemetrySink):
-    def __init__(self, connection_string: str, app_name: str) -> None:
-        if not AzureMonitorTraceExporter:
+class DatabricksOtelSink(TelemetrySink):
+    def __init__(
+        self,
+        endpoint: str,
+        token: str,
+        app_name: str,
+        experiment_id: str | None = None,
+    ) -> None:
+        if not OTLPSpanExporter:
             raise RuntimeError(
-                "azure-monitor-opentelemetry-exporter is not installed."
+                "opentelemetry-exporter-otlp is not installed."
             )
+        headers = {"Authorization": f"Bearer {token}"}
+        if experiment_id:
+            headers["x-mlflow-experiment-id"] = experiment_id
         resource = Resource.create({"service.name": app_name})
         provider = TracerProvider(resource=resource)
-        exporter = AzureMonitorTraceExporter(
-            connection_string=connection_string
-        )
+        exporter = OTLPSpanExporter(endpoint=endpoint, headers=headers)
         provider.add_span_processor(BatchSpanProcessor(exporter))
         trace.set_tracer_provider(provider)
         self.tracer = trace.get_tracer(app_name)
@@ -93,16 +100,29 @@ class AzureOtelSink(TelemetrySink):
 
 def create_sink(app_name: str) -> TelemetrySink:
     dest = os.environ.get("LOG_DEST", "local").lower().strip()
-    if dest == "azure":
-        connection_string = os.environ.get(
-            "APPLICATIONINSIGHTS_CONNECTION_STRING", ""
-        )
-        if not connection_string:
+    if dest == "databricks":
+        endpoint = os.environ.get("DATABRICKS_OTLP_ENDPOINT", "").strip()
+        host = os.environ.get("DATABRICKS_HOST", "").strip()
+        if not endpoint and host:
+            endpoint = host.rstrip("/") + "/api/2.0/otel/v1/traces"
+        if not endpoint:
             logging.warning(
-                "APPLICATIONINSIGHTS_CONNECTION_STRING is not set."
+                "DATABRICKS_OTLP_ENDPOINT or DATABRICKS_HOST is not set."
             )
             return NullSink()
-        return AzureOtelSink(connection_string=connection_string, app_name=app_name)
+        token = os.environ.get("DATABRICKS_TOKEN", "").strip()
+        if not token:
+            logging.warning("DATABRICKS_TOKEN is not set.")
+            return NullSink()
+        experiment_id = os.environ.get(
+            "DATABRICKS_MLFLOW_EXPERIMENT_ID", ""
+        ).strip()
+        return DatabricksOtelSink(
+            endpoint=endpoint,
+            token=token,
+            app_name=app_name,
+            experiment_id=experiment_id or None,
+        )
 
     log_dir = os.environ.get("LOG_DIR", "./logs")
     return LocalMarkdownSink(base_dir=log_dir)
