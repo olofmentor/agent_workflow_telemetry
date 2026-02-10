@@ -1,4 +1,3 @@
 google-adk
-opentelemetry-exporter-otlp
 litellm>=1.75.5
 pypdf

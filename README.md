@@ -35,12 +35,13 @@ The workflow expects these environment variables:
 - `MODEL` (default: `gemini-2.0-flash`)
 - `DOCUMENTS_DIR` (default: `./input_files`)
 - `MAX_FILE_CHARS` (default: `12000`)
-- `LOG_DEST` (`local` or `databricks`)
-- `LOG_DIR` (default: `./logs`, for local markdown logs)
-- `DATABRICKS_HOST` (Databricks workspace base URL)
-- `DATABRICKS_TOKEN` (Databricks token for OTLP ingestion)
-- `DATABRICKS_OTLP_ENDPOINT` (optional override for OTLP endpoint)
-- `DATABRICKS_MLFLOW_EXPERIMENT_ID` (optional MLflow experiment ID)
+- `OTEL_SERVICE_NAME` (service name for OTel traces)
+- `OTEL_EXPORTER_OTLP_ENDPOINT` (Databricks OTLP/HTTP endpoint)
+- `OTEL_EXPORTER_OTLP_PROTOCOL` (set to `http/protobuf`)
+- `OTEL_EXPORTER_OTLP_HEADERS` (e.g. `Authorization=Bearer <token>`)
+- `OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED` (set to `true`)
+- `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` (set to `true`)
+- `ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS` (set to `false`)
 - `OPENAI_API_BASE` (for LM Studio, e.g. `http://localhost:1234/v1`)
 - `OPENAI_API_KEY` (for LM Studio, use any non-empty value)
 ## Document support
@@ -53,10 +54,14 @@ The workflow expects these environment variables:
 
 1. Put your project documentation in `./input_files` (or set `DOCUMENTS_DIR`).
 2. Install dependencies: `pip install -r requirements.txt`.
-3. Configure logging:
-   - For local: `LOG_DEST=local` and `LOG_DIR=./logs`.
-   - For Databricks: `LOG_DEST=databricks`, set `DATABRICKS_HOST` and
-     `DATABRICKS_TOKEN` (optional `DATABRICKS_MLFLOW_EXPERIMENT_ID`).
+3. Configure logging (ADK native OTel → Databricks MLflow):
+   - `OTEL_EXPORTER_OTLP_ENDPOINT="https://<workspace>/api/2.0/otel/v1/traces"`
+   - `OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf"`
+   - `OTEL_EXPORTER_OTLP_HEADERS="Authorization=Bearer <token>"`
+   - `OTEL_SERVICE_NAME="SE_workflow_test"`
+   - `OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED="true"`
+   - `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT="true"`
+   - `ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS="false"`
 4. From the parent directory of this repo, run `adk run SE_workflow_test`.
 5. Provide the user question as the initial message.
 6. If the clarifier asks questions, pass your answers by setting
