@@ -1,5 +1,5 @@
 """
-Test suite for the Agent Workflow Telemetry system.
+Test suite for the Agent Workflow.
 
 This module tests the multi-agent workflow including:
 - Bootstrap agent

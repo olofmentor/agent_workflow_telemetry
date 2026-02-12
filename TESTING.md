@@ -1,7 +1,7 @@
 # Agent Workflow Testing Guide
 
 ## Overview
-This document provides comprehensive information about testing the agent workflow telemetry system.
+This document provides comprehensive information about testing the agent workflow.
 
 ## Test Documents Created
 
@@ -100,47 +100,48 @@ Performance-related tests.
 **Purpose**: Validate complete workflow execution with real documents.
 
 **Test Phases**:
-1. **Environment Setup**: Configure test environment and logging
+1. **Environment Setup**: Configure test environment
 2. **Document Validation**: Verify test documents exist
 3. **Workflow Execution**: Run through all workflow phases
-4. **Results Validation**: Check outputs and trace logs
+4. **Results Validation**: Check outputs
 
 **Execution Steps**:
 ```bash
-# Run from project root
-wsl bash -c "cd /mnt/c/Users/xgranbolo/AICode/Workflow_demo/agent_workflow_telemetry && python3 tests/test_e2e.py"
+# Run from project root (parent of SE_workflow_test)
+cd SE_workflow_test
+python3 tests/test_e2e.py
 ```
 
 ## Running Tests
 
 ### Prerequisites
 ```bash
-# Install test dependencies
-wsl bash -c "cd /mnt/c/Users/xgranbolo/AICode/Workflow_demo/agent_workflow_telemetry && python3 -m pip install pytest pytest-asyncio"
+pip install -r requirements-test.txt
 ```
 
 ### Run All Unit Tests
 ```bash
-wsl bash -c "cd /mnt/c/Users/xgranbolo/AICode/Workflow_demo/agent_workflow_telemetry && python3 -m pytest tests/test_workflow.py -v"
+pytest tests/test_workflow.py -v
 ```
 
 ### Run Specific Test Class
 ```bash
-wsl bash -c "cd /mnt/c/Users/xgranbolo/AICode/Workflow_demo/agent_workflow_telemetry && python3 -m pytest tests/test_workflow.py::TestDocumentReaderAgent -v"
+pytest tests/test_workflow.py::TestDocumentReaderAgent -v
 ```
 
 ### Run End-to-End Test
 ```bash
-wsl bash -c "cd /mnt/c/Users/xgranbolo/AICode/Workflow_demo/agent_workflow_telemetry && python3 tests/test_e2e.py"
+python3 tests/test_e2e.py
+```
+
+### Run OTLP Export Test
+```bash
+python3 tests/test_otlp_export.py
 ```
 
 ### Run with Coverage
 ```bash
-# Install coverage tool
-wsl bash -c "python3 -m pip install pytest-cov"
-
-# Run with coverage
-wsl bash -c "cd /mnt/c/Users/xgranbolo/AICode/Workflow_demo/agent_workflow_telemetry && python3 -m pytest tests/test_workflow.py --cov=. --cov-report=html"
+pytest tests/test_workflow.py --cov=. --cov-report=html
 ```
 
 ## Test Scenarios
@@ -229,22 +230,13 @@ wsl bash -c "cd /mnt/c/Users/xgranbolo/AICode/Workflow_demo/agent_workflow_telem
 
 ## Trace Validation
 
-### Databricks Traces
-Check traces at: https://adb-957977613266276.16.azuredatabricks.net/ml/experiments/3078644569850998/traces
+### Databricks MLflow
+With `OTEL_EXPORTER_OTLP_ENDPOINT` and `OTEL_EXPORTER_OTLP_HEADERS` configured, traces are sent to Databricks MLflow. Check your experiment in the Databricks workspace.
 
 **Expected Trace Elements**:
-- Service name: `SE_workflow_test`
 - Spans for each agent execution
 - Timing information for each phase
 - Error traces (if any issues occurred)
-
-### Local Logs (if using LOG_DEST=local)
-Check logs in: `./logs/` directory
-
-**Expected Log Files**:
-- `session_{session_id}.md` files
-- Event logs for each agent action
-- Timestamps and session metadata
 
 ## Troubleshooting
 

@@ -16,22 +16,17 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 def setup_test_environment():
     """Set up test environment variables."""
-    # Use local logging for testing
-    os.environ['LOG_DEST'] = 'local'
-    os.environ['LOG_DIR'] = './test_logs'
-    os.environ['DOCUMENTS_DIR'] = './input_files'
-    
-    # Create test logs directory
-    Path('./test_logs').mkdir(exist_ok=True)
-    
+    project_root = Path(__file__).resolve().parent.parent
+    os.environ["DOCUMENTS_DIR"] = str(project_root / "input_files")
+
     print("✓ Test environment configured")
-    print(f"  - Log directory: {os.environ['LOG_DIR']}")
     print(f"  - Documents directory: {os.environ['DOCUMENTS_DIR']}")
 
 
 def check_test_documents():
     """Check if test documents exist."""
-    docs_dir = Path(os.environ.get('DOCUMENTS_DIR', './input_files'))
+    default = Path(__file__).resolve().parent.parent / "input_files"
+    docs_dir = Path(os.environ.get("DOCUMENTS_DIR", str(default)))
     
     if not docs_dir.exists():
         print(f"❌ Documents directory not found: {docs_dir}")
@@ -150,8 +145,8 @@ def print_test_results(success: bool):
         print("  ✓ Workflow structure validated")
         print("  ✓ All agents initialized")
         print("\nNext steps:")
-        print("  1. Run the full workflow with: adk run agent_workflow_telemetry")
-        print("  2. Check traces in Databricks or local logs")
+        print("  1. Run the full workflow with: adk run SE_workflow_test")
+        print("  2. Check traces in Databricks MLflow")
     else:
         print("\n❌ END-TO-END TEST FAILED")
         print("\nPlease review the error messages above.")

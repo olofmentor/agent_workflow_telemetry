@@ -1,3 +1,1 @@
-"""
-Test package for agent workflow telemetry.
-"""
+"""Test package for agent workflow."""
