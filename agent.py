@@ -95,7 +95,11 @@ else:
 
 from google.adk.apps import App
 
-from .workflow import root_agent
+try:
+    from .workflow import root_agent
+except ImportError:
+    # Fallback for direct script execution where package context is missing
+    from workflow import root_agent
 
 app = App(name="SE_workflow_test", root_agent=root_agent)
 

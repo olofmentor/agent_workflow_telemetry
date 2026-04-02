@@ -1,12 +1,21 @@
 import logging
 from google.adk.agents import SequentialAgent
 
-from .agents.bootstrap import UserQuestionBootstrapAgent
-from .agents.clarifier import build_clarifier_agent
-from .agents.reader import DocumentReaderAgent
-from .agents.summarizer import build_summarizer_agent
-from .agents.synthesizer import build_synthesizer_agent
-from .config import load_config
+try:
+    from .agents.bootstrap import UserQuestionBootstrapAgent
+    from .agents.clarifier import build_clarifier_agent
+    from .agents.reader import DocumentReaderAgent
+    from .agents.summarizer import build_summarizer_agent
+    from .agents.synthesizer import build_synthesizer_agent
+    from .config import load_config
+except ImportError:
+    # Support direct script execution without package context
+    from agents.bootstrap import UserQuestionBootstrapAgent
+    from agents.clarifier import build_clarifier_agent
+    from agents.reader import DocumentReaderAgent
+    from agents.summarizer import build_summarizer_agent
+    from agents.synthesizer import build_synthesizer_agent
+    from config import load_config
 
 # Setup logger for workflow
 logger = logging.getLogger(__name__)
