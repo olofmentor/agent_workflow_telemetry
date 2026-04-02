@@ -5,6 +5,12 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
+# ADK uses this for OpenTelemetry *log* events (gen_ai.user.message, etc.):
+# without it, message bodies are "<elided>" in OTLP logs while spans may still
+# carry full JSON if ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS is true.
+if "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT" not in os.environ:
+    os.environ["OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT"] = "true"
+
 from opentelemetry import trace, _logs
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.exporter.otlp.proto.http._log_exporter import OTLPLogExporter
@@ -19,6 +25,11 @@ import atexit
 endpoint = os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT')
 headers_str = os.getenv('OTEL_EXPORTER_OTLP_HEADERS', '')
 service_name = os.getenv('OTEL_SERVICE_NAME', 'SE_workflow_test')
+_log_level = getattr(
+    logging,
+    os.getenv("LOG_LEVEL", "INFO").upper(),
+    logging.INFO,
+)
 
 if endpoint:
     # Parse headers from environment
@@ -58,10 +69,11 @@ if endpoint:
     # Set the global logger provider
     _logs.set_logger_provider(logger_provider)
     
-    # Attach OTEL handler to root logger
-    handler = LoggingHandler(level=logging.INFO, logger_provider=logger_provider)
-    logging.getLogger().addHandler(handler)
-    logging.getLogger().setLevel(logging.INFO)
+    # Attach OTEL handler to root logger (severity filtered by handler and logger)
+    handler = LoggingHandler(level=_log_level, logger_provider=logger_provider)
+    root = logging.getLogger()
+    root.addHandler(handler)
+    root.setLevel(_log_level)
     
     # Register shutdown handlers to ensure logs are flushed
     def shutdown_telemetry():

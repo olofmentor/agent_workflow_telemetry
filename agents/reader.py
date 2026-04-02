@@ -7,6 +7,8 @@ from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events import Event
 from pypdf import PdfReader
 
+from .step_logging import log_custom_agent_step
+
 DEFAULT_ALLOWED_EXTENSIONS = (
     ".md",
     ".txt",
@@ -133,4 +135,11 @@ class DocumentReaderAgent(BaseAgent):
                 documents, ensure_ascii=True
             )
 
+        n = len(documents)
+        n_ok = sum(1 for d in documents if d.get("content_available"))
+        log_custom_agent_step(
+            "document_reader",
+            ctx,
+            f"DocumentReader indexed {n} files ({n_ok} with readable content) from {self.documents_dir}",
+        )
         yield Event(author=self.name)
