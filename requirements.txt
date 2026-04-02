@@ -3,3 +3,4 @@ litellm>=1.75.5
 pypdf
 mlflow[genai]>=3.6.0
 opentelemetry-exporter-otlp-proto-http
+opentelemetry-instrumentation-openai-v2

@@ -38,6 +38,9 @@ The workflow expects these environment variables:
 - `MAX_FILE_CHARS` (default: `12000`)
 - `OPENAI_API_BASE` (for LM Studio / Azure Foundry, e.g. `http://localhost:1234/v1`)
 - `OPENAI_API_KEY` (for LM Studio / Azure Foundry)
+- `OTEL_SERVICE_NAME` (default: SE_workflow_test)
+- `MLFLOW_TRACING_SQL_WAREHOUSE_ID` (for UC setup; find in SQL warehouse URL)
+- `DATABRICKS_CATALOG`, `DATABRICKS_SCHEMA` (optional; for UC trace storage)
 ## Document support
 
 - Text formats: `.md`, `.txt`, `.rst`, `.log`, `.csv`, `.json`, `.yaml`, `.yml`
@@ -49,8 +52,9 @@ The workflow expects these environment variables:
 1. Put your project documentation in `./input_files` (or set `DOCUMENTS_DIR`).
 2. Install dependencies: `pip install -r requirements.txt`.
 3. Configure OpenTelemetry for MLflow tracing (see [MLflow + Google ADK](https://mlflow.org/docs/latest/genai/tracing/integrations/listing/google-adk/)):
-   - `OTEL_EXPORTER_OTLP_ENDPOINT` – OTLP endpoint URL
+   - `OTEL_EXPORTER_OTLP_ENDPOINT` – OTLP traces URL (e.g. `.../api/2.0/otel/v1/traces`)
    - `OTEL_EXPORTER_OTLP_HEADERS` – headers (e.g. `x-mlflow-experiment-id=<id>`)
+   - Logs are sent to `.../api/2.0/otel/v1/logs` (same base URL). Requires `opentelemetry-exporter-otlp-proto-http` (included in requirements).
 4. From the parent directory of this repo, run `adk run SE_workflow_test`.
 5. Provide the user question as the initial message.
 6. If the clarifier asks questions, pass your answers by setting
@@ -64,6 +68,16 @@ For Databricks, set:
 - `OTEL_EXPORTER_OTLP_HEADERS="Authorization=Bearer <token>,x-mlflow-experiment-id=<id>"`
 
 Create the experiment in Databricks if needed, then use its ID in the header.
+
+### Unity Catalog trace setup (metadata and UC tables)
+
+To store traces in Unity Catalog tables (including `mlflow_experiment_trace_metadata`), run the one-time setup script before sending traces:
+
+```bash
+python scripts/setup_uc_tracing.py
+```
+
+Required env vars: `MLFLOW_TRACING_SQL_WAREHOUSE_ID` (from your SQL warehouse URL). Optional: `DATABRICKS_CATALOG` (default: main), `DATABRICKS_SCHEMA` (default: mlflow_traces), `MLFLOW_EXPERIMENT_ID` or `MLFLOW_EXPERIMENT_NAME`. The script links your experiment to a UC schema so spans, logs, and metadata are written to UC tables.
 
 The workflow stores intermediate outputs in session state:
 
