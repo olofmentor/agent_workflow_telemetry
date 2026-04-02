@@ -6,7 +6,11 @@ from .step_logging import log_llm_step_completed
 def build_summarizer_agent(model_name: str) -> LlmAgent:
     _OUT = "file_summaries"
 
-    def _after_model(ctx, response):
+    def _after_model(ctx=None, response=None, **kwargs):
+        ctx = kwargs.get("callback_context", ctx)
+        response = kwargs.get("llm_response", response)
+        if ctx is None or response is None:
+            return None
         log_llm_step_completed(_OUT, ctx, response)
         return None
 
