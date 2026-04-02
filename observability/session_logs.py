@@ -1,4 +1,4 @@
-"""Session-correlated logging for workflow steps (OTLP logs → Unity Catalog)."""
+"""Session-correlated stdlib logging (exported via OTLP LoggingHandler → Unity Catalog)."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 _DEFAULT_MAX_CHARS = 256000
 
 
-def _max_log_chars() -> int:
+def max_response_log_chars() -> int:
     raw = os.environ.get("AGENT_LOG_RESPONSE_MAX_CHARS")
     if raw is None or raw == "":
         return _DEFAULT_MAX_CHARS
@@ -54,7 +54,7 @@ def log_llm_step_completed(
 ) -> None:
     """Log one LLM turn with session/invocation ids and optional reasoning text."""
     visible, reasoning = split_model_visible_and_reasoning_text(response.content)
-    limit = _max_log_chars()
+    limit = max_response_log_chars()
     visible_logged = _maybe_truncate(visible, limit)
     reasoning_logged = _maybe_truncate(reasoning, limit) if reasoning else ""
 

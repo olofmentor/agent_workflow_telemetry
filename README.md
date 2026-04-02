@@ -24,7 +24,8 @@ The workflow is sequential and uses three logical agents:
 - `agent.py` exposes `root_agent`/`app` for ADK CLI usage.
 - `workflow.py` wires the agents into a sequential workflow.
 - `config.py` centralizes environment configuration and path normalization.
-- `agents/` contains reader, clarifier, summarizer, and synthesizer agents.
+- `agents/` contains reader, clarifier, summarizer, and synthesizer agents (see `agents/instrumented_llm_agent.py` for the LLM logging template).
+- `observability/` holds reusable OTLP/session logging helpers (`readme-logs.md` describes behavior).
 - `tests/` contains workflow and OTLP export tests.
 - `scripts/` contains Databricks utility scripts (see scripts/README.md).
 - `input_files/` holds project documentation to summarize.

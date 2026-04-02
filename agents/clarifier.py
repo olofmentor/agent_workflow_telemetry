@@ -1,23 +1,11 @@
-from google.adk.agents import LlmAgent
-
-from .step_logging import log_llm_step_completed
+from .instrumented_llm_agent import instrumented_llm_agent
 
 
-def build_clarifier_agent(model_name: str) -> LlmAgent:
-    _OUT = "clarification"
-
-    def _after_model(ctx=None, response=None, **kwargs):
-        ctx = kwargs.get("callback_context", ctx)
-        response = kwargs.get("llm_response", response)
-        if ctx is None or response is None:
-            return None
-        log_llm_step_completed(_OUT, ctx, response)
-        return None
-
-    return LlmAgent(
+def build_clarifier_agent(model_name: str):
+    return instrumented_llm_agent(
         name="Agent1_Clarifier",
         model=model_name,
-        after_model_callback=_after_model,
+        output_key="clarification",
         instruction=(
             "You are Agent 1. The user asked: {user_question?}\n"
             "The documentation directory is {documents_dir?}. "
@@ -31,5 +19,4 @@ def build_clarifier_agent(model_name: str) -> LlmAgent:
             "notes (string).\n"
             "If no clarification is needed, return an empty list."
         ),
-        output_key=_OUT,
     )

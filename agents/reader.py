@@ -7,7 +7,7 @@ from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events import Event
 from pypdf import PdfReader
 
-from .step_logging import log_custom_agent_step
+from observability.session_logs import log_custom_agent_step
 
 DEFAULT_ALLOWED_EXTENSIONS = (
     ".md",
