@@ -27,6 +27,9 @@ def test_apply_adk_telemetry_defaults_respects_existing(monkeypatch):
 
 def test_configure_otel_returns_false_without_endpoint(monkeypatch):
     monkeypatch.delenv("OTEL_EXPORTER_OTLP_ENDPOINT", raising=False)
+    import observability.otel_sdk as otel_sdk_mod
+    monkeypatch.setattr(otel_sdk_mod, "_export_otel_configured", False)
+    monkeypatch.setattr(otel_sdk_mod, "_noop_otel_configured", False)
     log = logging.getLogger("test_otel_sdk")
     assert configure_otel_from_env(log=log, use_print_status=False) is False
 
