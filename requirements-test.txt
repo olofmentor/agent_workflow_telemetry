@@ -1,9 +1,6 @@
-# Testing Requirements
-# Additional packages needed for running tests
-
-pytest>=7.4.0
-pytest-asyncio>=0.21.0
+# Full local/CI test stack: app + pytest + coverage helpers.
+-r requirements.txt
+-r requirements-dev.txt
 pytest-cov>=4.1.0
 pytest-mock>=3.11.1
-python-dotenv>=1.0.0
 requests>=2.28.0

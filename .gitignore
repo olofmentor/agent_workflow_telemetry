@@ -5,3 +5,6 @@ __pycache__/
 .DS_Store
 logs/
 input_files/
+.terraform/
+terraform.tfvars
+*.auto.tfvars

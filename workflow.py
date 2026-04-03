@@ -9,7 +9,6 @@ try:
     from .agents.synthesizer import build_synthesizer_agent
     from .config import load_config
 except ImportError:
-    # Support direct script execution without package context
     from agents.bootstrap import UserQuestionBootstrapAgent
     from agents.clarifier import build_clarifier_agent
     from agents.reader import DocumentReaderAgent
@@ -17,15 +16,15 @@ except ImportError:
     from agents.synthesizer import build_synthesizer_agent
     from config import load_config
 
-# Setup logger for workflow
 logger = logging.getLogger(__name__)
 
 
-def build_workflow() -> SequentialAgent:
+def build_root_agent() -> SequentialAgent:
+    """Construct the workflow root agent (sequential pipeline)."""
     logger.info("Building LessonsLearnedWorkflow")
     config = load_config()
 
-    logger.info(f"Initializing agents with model: {config.model_name}")
+    logger.info("Initializing agents with model: %s", config.model_name)
     agent0_bootstrap = UserQuestionBootstrapAgent(
         documents_dir=config.documents_dir
     )
@@ -52,4 +51,4 @@ def build_workflow() -> SequentialAgent:
     )
 
 
-root_agent = build_workflow()
+root_agent = build_root_agent()

@@ -1,4 +1,4 @@
-from .instrumented_llm_agent import instrumented_llm_agent
+from adk_templates import instrumented_llm_agent
 
 
 def build_clarifier_agent(model_name: str):

@@ -1,0 +1,6 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+python_files = ["test_*.py"]
+
+# Application dependencies: requirements.txt. Pytest: requirements-dev.txt (or requirements-test.txt for coverage).

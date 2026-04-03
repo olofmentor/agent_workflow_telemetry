@@ -7,7 +7,7 @@ This project sends **traces (spans)** and **OpenTelemetry logs** to Databricks w
 | Level | Where | What you see |
 |--------|--------|----------------|
 | **DEBUG** | Not used by default | Enable with `LOG_LEVEL=DEBUG` to forward DEBUG records to OTLP (if any library emits them). |
-| **INFO** | `workflow.py`, `agent.py`, `observability/session_logs.py`, `agents/bootstrap.py`, `agents/reader.py` | Workflow startup, OTEL initialization, each **custom agent step**, and each **LLM step** (via `instrumented_llm_agent`) after the model returns (response text, reasoning text when the model exposes it, token counts). |
+| **INFO** | `workflow.py`, `agent.py`, `observability/otel_sdk.py`, `observability/session_logs.py`, `agents/bootstrap.py`, `agents/reader.py` | Workflow startup, OTEL initialization, each **custom agent step**, and each **LLM step** (via `adk_templates.instrumented_llm_agent`) after the model returns (response text, reasoning text when the model exposes it, token counts). |
 | **WARNING** | `agent.py` | Missing optional OpenAI instrumentation package. |
 | **ERROR** | — | Standard Python errors if something fails; stack traces are attached to OTLP log attributes when exported. |
 
@@ -41,9 +41,9 @@ Other useful span attributes include:
 - `gcp.vertex.agent.invocation_id` — one user turn / invocation (also on our INFO logs).
 - `gen_ai.usage.experimental.reasoning_tokens` / `reasoning_tokens_limit` — when the model reports “thinking” usage (Gemini-style).
 
-## Application INFO logs (`observability/session_logs.py` + `agents/instrumented_llm_agent.py`)
+## Application INFO logs (`observability/session_logs.py` + `adk_templates/instrumented_llm.py`)
 
-LLM agents should be built with **`instrumented_llm_agent`** (see `agents/instrumented_llm_agent.py`), which registers an `after_model_callback` that logs **`LLM step completed`** with structured `extra` fields exported as OTLP **attributes**, including:
+LLM agents should be built with **`instrumented_llm_agent`** (from **`adk_templates`**; factory implemented in **`observability.llm_callbacks`**), which registers an `after_model_callback` that logs **`LLM step completed`** with structured `extra` fields exported as OTLP **attributes**, including:
 
 - `event_type`: `agent.llm_step`
 - `session_id`, `invocation_id`, `agent_name`, `output_state_key`

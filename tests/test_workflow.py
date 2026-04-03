@@ -167,26 +167,25 @@ Project Alpha was a successful initiative to modernize our systems.
     
     def test_workflow_builds_successfully(self):
         """Test that the workflow can be built without errors."""
-        from workflow import build_workflow
-        
-        workflow = build_workflow()
+        from workflow import build_root_agent
+
+        workflow = build_root_agent()
         assert workflow is not None
         assert workflow.name == "LessonsLearnedWorkflow"
-    
+
     def test_workflow_has_correct_agents(self):
         """Test that workflow contains all required agents."""
-        from workflow import build_workflow
-        
-        workflow = build_workflow()
-        assert hasattr(workflow, 'sub_agents')
+        from workflow import build_root_agent
+
+        workflow = build_root_agent()
+        assert hasattr(workflow, "sub_agents")
         assert len(workflow.sub_agents) == 5  # bootstrap, clarify, reader, summarize, synthesize
-    
-    @pytest.mark.asyncio
-    async def test_workflow_session_state_structure(self):
+
+    def test_workflow_session_state_structure(self):
         """Test that workflow expects correct session state structure."""
-        from workflow import build_workflow
-        
-        workflow = build_workflow()
+        from workflow import build_root_agent
+
+        workflow = build_root_agent()
         
         # Test session state keys
         test_state = {

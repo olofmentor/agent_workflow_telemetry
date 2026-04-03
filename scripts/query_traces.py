@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
-Check access to MLflow traces table in Databricks.
-For MLflow experiment traces, Databricks may store in a table like
-{ catalog }.agent_traces.mlflow_experiment_trace_otel_spans.
+Check access to the MLflow GenAI OTEL spans table in Unity Catalog.
+
+Table resolution matches ``scripts/check_databricks_table.py``:
+``DATABRICKS_CATALOG``, ``DATABRICKS_SCHEMA``, ``DATABRICKS_OTEL_SPANS_TABLE``.
+
 Requires: pip install requests python-dotenv
 """
 import os
@@ -13,6 +15,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 try:
     from dotenv import load_dotenv
+
     load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 except ImportError:
     pass
@@ -20,8 +23,14 @@ except ImportError:
 import requests
 
 CATALOG = os.getenv("DATABRICKS_CATALOG", "dev_ai")
-TABLE = "mlflow_experiment_trace_otel_spans"
-WORKSPACE_URL = os.getenv("DATABRICKS_HOST", "https://adb-957977613266276.16.azuredatabricks.net").rstrip("/")
+SCHEMA = os.getenv("DATABRICKS_SCHEMA", "mlflow_traces")
+TABLE = os.getenv(
+    "DATABRICKS_OTEL_SPANS_TABLE",
+    "mlflow_experiment_trace_otel_spans",
+)
+WORKSPACE_URL = os.getenv(
+    "DATABRICKS_HOST", "https://adb-957977613266276.16.azuredatabricks.net"
+).rstrip("/")
 
 
 def main():
@@ -32,10 +41,14 @@ def main():
             token = part.split("Bearer ")[1].strip()
             break
 
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-    full_table = f"{CATALOG}.agent_traces.{TABLE}"
+    if not token:
+        print("❌ No token found in OTEL_EXPORTER_OTLP_HEADERS")
+        sys.exit(1)
 
-    print(f"Checking for traces in {full_table}...")
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    full_table = f"{CATALOG}.{SCHEMA}.{TABLE}"
+
+    print(f"Checking for traces table {full_table}...")
     print("=" * 80)
 
     table_url = f"{WORKSPACE_URL}/api/2.1/unity-catalog/tables/{full_table}"

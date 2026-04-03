@@ -1,0 +1,16 @@
+databricks_host  = "https://adb-xxxx.azuredatabricks.net"
+databricks_token = "dapi...."
+
+catalog_name   = "dev_ai"
+schema_name    = "mlflow_traces"
+warehouse_name = "agent-genai-tracing"
+
+# Optional: UC schema grants
+# trace_schema_grants = [
+#   { principal = "data_engineers", privileges = ["USE_SCHEMA", "SELECT", "MODIFY"] }
+# ]
+
+# Optional: warehouse ACLs (group display name -> permission level)
+# warehouse_group_permission_levels = {
+#   data_engineers = "CAN_USE"
+# }

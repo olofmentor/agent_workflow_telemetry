@@ -71,6 +71,8 @@ Tests configuration loading and environment variable handling.
 #### TestWorkflowIntegration
 Integration tests for the complete workflow.
 
+The workflow under test is constructed by **`build_root_agent()`** in `workflow.py` (not a legacy `build_workflow`-style name).
+
 **Key Tests**:
 - `test_workflow_builds_successfully`: Verifies workflow construction
 - `test_workflow_has_correct_agents`: Validates agent count and structure
@@ -116,8 +118,10 @@ python3 tests/test_e2e.py
 
 ### Prerequisites
 ```bash
-pip install -r requirements-test.txt
+pip install -r requirements.txt -r requirements-dev.txt
 ```
+
+For coverage and extra helpers: `pip install -r requirements-test.txt` (includes the lines above).
 
 ### Run All Unit Tests
 ```bash

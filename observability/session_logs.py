@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+from typing import TypeAlias
 
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.agents.invocation_context import InvocationContext
@@ -11,6 +12,9 @@ from google.adk.models.llm_response import LlmResponse
 from google.genai import types
 
 logger = logging.getLogger(__name__)
+
+# Values safe for stdlib logging ``extra`` and OTLP log attribute export.
+OtlpExtraValue: TypeAlias = str | int | float | bool | None
 
 _DEFAULT_MAX_CHARS = 256000
 
@@ -86,15 +90,23 @@ def log_llm_step_completed(
     )
 
 
+def log_agent_step(
+    kind: str,
+    ctx: InvocationContext,
+    message: str,
+    **extra_fields: OtlpExtraValue,
+) -> None:
+    """Log a custom (non-LLM) agent step with optional OTLP-safe ``extra`` fields."""
+    payload: dict[str, OtlpExtraValue] = {
+        "event_type": f"agent.{kind}",
+        "session_id": ctx.session.id,
+        "invocation_id": ctx.invocation_id,
+        "agent_name": ctx.agent.name,
+    }
+    payload.update(extra_fields)
+    logger.info("%s", message, extra=payload)
+
+
 def log_custom_agent_step(kind: str, ctx: InvocationContext, detail: str) -> None:
     """Log completion of a non-LLM agent step (reader, bootstrap, etc.)."""
-    logger.info(
-        "%s",
-        detail,
-        extra={
-            "event_type": f"agent.{kind}",
-            "session_id": ctx.session.id,
-            "invocation_id": ctx.invocation_id,
-            "agent_name": ctx.agent.name,
-        },
-    )
+    log_agent_step(kind, ctx, detail)

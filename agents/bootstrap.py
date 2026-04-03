@@ -4,7 +4,7 @@ from google.adk.agents import BaseAgent
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events import Event
 
-from observability.session_logs import log_custom_agent_step
+from observability.session_logs import log_agent_step
 
 
 class UserQuestionBootstrapAgent(BaseAgent):
@@ -27,7 +27,7 @@ class UserQuestionBootstrapAgent(BaseAgent):
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
         if ctx.session.state.get("user_question"):
-            log_custom_agent_step(
+            log_agent_step(
                 "bootstrap_skip",
                 ctx,
                 "Bootstrap skipped: user_question already in session state",
@@ -46,7 +46,7 @@ class UserQuestionBootstrapAgent(BaseAgent):
         ctx.session.state["user_question"] = user_text
         ctx.session.state["documents_dir"] = self.documents_dir
         preview = user_text[:500] + ("…" if len(user_text) > 500 else "")
-        log_custom_agent_step(
+        log_agent_step(
             "bootstrap",
             ctx,
             f"Bootstrap stored user_question ({len(user_text)} chars): {preview!r}",
