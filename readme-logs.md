@@ -6,9 +6,10 @@ This project sends **traces (spans)** and **OpenTelemetry logs** to Databricks w
 
 | Level | Where | What you see |
 |--------|--------|----------------|
-| **DEBUG** | Not used by default | Enable with `LOG_LEVEL=DEBUG` to forward DEBUG records to OTLP (if any library emits them). |
-| **INFO** | `workflow.py`, `agent.py`, `observability/otel_sdk.py`, `observability/session_logs.py`, `agents/bootstrap.py`, `agents/reader.py` | Workflow startup, OTEL initialization, each **custom agent step**, and each **LLM step** (via `adk_templates.instrumented_llm_agent`) after the model returns (response text, reasoning text when the model exposes it, token counts). |
-| **WARNING** | `agent.py` | Missing optional OpenAI instrumentation package. |
+| **DEBUG** | `observability/otel_sdk.py` (and any library at DEBUG) | With `LOG_LEVEL=DEBUG`, duplicate `configure_otel_from_env` calls log skip messages; other libraries may emit DEBUG as well. |
+| **INFO** | `workflow.py`, `observability/otel_sdk.py`, `observability/session_logs.py` | Workflow startup, OTEL initialization, each **custom agent step** and **LLM step** (custom/LLM calls originate from `agents/*` and `adk_templates.instrumented_llm_agent`, but records use the `observability.session_logs` / OTEL loggers). LLM INFO includes response text, reasoning when the model exposes it, and token counts. |
+| **WARNING** | `agent.py` | Failed Databricks init when `AUTO_CONFIGURE_DATABRICKS_TRACING` is set (see log message). |
+| **WARNING** | `observability/otel_sdk.py` | Optional OpenAI instrumentation package not installed. |
 | **ERROR** | — | Standard Python errors if something fails; stack traces are attached to OTLP log attributes when exported. |
 
 Configure minimum severity with:
@@ -29,7 +30,7 @@ These appear in the UC logs table (and MLflow trace UI) and complement spans. Me
 - By default ADK uses stable semconv: look for log event names such as `gen_ai.system.message`, `gen_ai.user.message`, and `gen_ai.choice`.
 - If you set `OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental`, ADK expects **`OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT`** to be one of **`EVENT_ONLY`**, **`SPAN_ONLY`**, or **`SPAN_AND_EVENT`** (not `true`) so input/output messages are attached to the `gen_ai.client.inference.operation.details` log. See the [OpenTelemetry GenAI events spec](https://github.com/open-telemetry/semantic-conventions/blob/main/docs/gen-ai/gen-ai-events.md).
 
-This repo sets `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true` by default in `agent.py` only when the variable is **unset**, which suits the **non-experimental** ADK path.
+This repo sets `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true` by default in `observability/adk_defaults.py` (`apply_adk_telemetry_defaults()`), which `agent.py` calls at import, only when the variable is **absent** from the environment—this suits the **non-experimental** ADK path.
 
 ## Span attributes (LLM request/response on spans)
 
