@@ -1,6 +1,6 @@
 # Logging: Unity Catalog, MLflow, and session correlation
 
-This project sends **traces (spans)** and **OpenTelemetry logs** to Databricks when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. MLflow links them under the configured experiment (`x-mlflow-experiment-id` header). Unity Catalog tables such as `mlflow_experiment_trace_otel_spans` and `mlflow_experiment_trace_otel_logs` hold the exported data.
+This project sends **traces (spans)** and **OpenTelemetry logs** to Databricks when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. MLflow links them under the configured experiment (`x-mlflow-experiment-id` header). Unity Catalog tables such as `mlflow_experiment_trace_otel_spans` and `mlflow_experiment_trace_otel_logs` hold the exported data. **Without** an endpoint, nothing is exported to those tables: `configure_otel_from_env` installs a no-op tracer and does not attach the OTLP `LoggingHandler` to the root logger.
 
 ## Python `logging` levels used here
 
@@ -56,6 +56,31 @@ Non-LLM steps log `event_type` values `agent.bootstrap`, `agent.bootstrap_skip`,
 Truncate oversized text with:
 
 - `AGENT_LOG_RESPONSE_MAX_CHARS` — default `256000`.
+
+### Optional fields on `log_agent_step` (non-LLM agents)
+
+`log_agent_step` accepts **`**extra_fields`** after `message`. Each keyword becomes a **log attribute** alongside the built-in keys (`event_type`, `session_id`, `invocation_id`, `agent_name`). Values must be **OTLP-safe scalars** so the stdlib `logging` `extra` payload can be exported cleanly: **`str`**, **`int`**, **`float`**, **`bool`**, or **`None`** (see `OtlpExtraValue` in `observability/session_logs.py`). Do **not** pass lists, dicts, or arbitrary objects—those may break or be dropped by the exporter.
+
+**How to add information**
+
+1. **Pick stable attribute names** (snake_case), e.g. `files_indexed`, `preview_used`, `duration_ms`.
+2. **Pass them as keyword arguments** after the human-readable `message`:
+
+```python
+log_agent_step(
+    "document_reader",
+    ctx,
+    "Indexed project docs",
+    files_indexed=12,
+    previews_only=True,
+    notes="optional string detail",
+)
+```
+
+3. **Structured or nested data** — encode as a **single string** (e.g. JSON) if you need more than one field’s worth of detail: `manifest_summary='{"ok":9,"skipped":3}'`. Prefer short strings so UC log attributes stay readable.
+4. **Querying** — in Databricks SQL or MLflow log views, filter or project the same attribute names you passed.
+
+LLM turns use `log_llm_step_completed` with a fixed schema; to add fields there, extend `observability/session_logs.py` in that function (and keep values scalar-friendly) rather than overloading `log_agent_step`.
 
 ## Correlating a full session in Databricks / MLflow
 
