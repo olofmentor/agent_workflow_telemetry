@@ -1,6 +1,6 @@
 # Logging: Unity Catalog, MLflow, and session correlation
 
-This project sends **traces (spans)** and **OpenTelemetry logs** to Databricks when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. MLflow links them under the configured experiment (`x-mlflow-experiment-id` header). Unity Catalog tables such as `mlflow_experiment_trace_otel_spans` and `mlflow_experiment_trace_otel_logs` hold the exported data. **Without** an endpoint, nothing is exported to those tables: `configure_otel_from_env` installs a no-op tracer and does not attach the OTLP `LoggingHandler` to the root logger.
+This project sends **traces (spans)** and **OpenTelemetry logs** to Databricks when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. MLflow links them under the configured experiment (`x-mlflow-experiment-id` header). Unity Catalog tables such as `mlflow_experiment_trace_otel_spans` and `mlflow_experiment_trace_otel_logs` hold the exported data. Reference column layouts and view SQL (from `DESCRIBE TABLE EXTENDED`) live under [`sql/mlflow_trace_tables/`](sql/mlflow_trace_tables/README.md). **Without** an endpoint, nothing is exported to those tables: `configure_otel_from_env` installs a no-op tracer and does not attach the OTLP `LoggingHandler` to the root logger.
 
 ## Python `logging` levels used here
 

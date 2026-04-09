@@ -178,7 +178,7 @@ def ensure_trace_infrastructure(
         from mlflow.tracing.enablement import set_experiment_trace_location
     except ImportError as e:
         raise ImportError(
-            "Install mlflow for Databricks tracing: pip install 'mlflow[databricks]>=3.6.0'"
+            "Install mlflow for Databricks tracing: uv sync (see mlflow in pyproject.toml)"
         ) from e
 
     mlflow.set_tracking_uri("databricks")

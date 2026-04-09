@@ -1,6 +1,43 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "se-workflow-test"
+version = "0.1.0"
+description = "Sequential multi-agent workflow using Google ADK with observability and Databricks tracing"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "google-adk",
+    "litellm>=1.75.5",
+    "pypdf",
+    "mlflow[genai]>=3.6.0",
+    "opentelemetry-exporter-otlp-proto-http",
+    "opentelemetry-instrumentation-openai-v2",
+    "python-dotenv",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+]
+test = [
+    { include-group = "dev" },
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.1",
+    "requests>=2.28.0",
+]
+
+[tool.setuptools]
+py-modules = ["agent", "config", "workflow"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agents*", "adk_templates*", "observability*", "init*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 python_files = ["test_*.py"]
-
-# Application dependencies: requirements.txt. Pytest: requirements-dev.txt (or requirements-test.txt for coverage).

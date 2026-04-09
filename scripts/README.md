@@ -6,7 +6,7 @@ Helper scripts for Databricks Unity Catalog and trace validation.
 
 **`verify_otel_config.py` vs `python -m init --dry-run`:** Use **`verify_otel_config.py`** when you already have a `.env` and want a quick sanity check of OTLP variables (and optional connectivity) before running the app. Use **`python -m init --dry-run`** when you want to see what **`init`** would compute (MLflow experiment linking, merged headers, endpoint derivation) **without** applying changes—e.g. after editing catalog/schema or when bootstrapping UC tables for the first time.
 
-**Requirements:** `pip install requests python-dotenv`
+**Requirements:** From the repo root run `uv sync` (includes `requests` and `python-dotenv`). Use `uv run python scripts/<script>.py` so the project environment is applied.
 
 | Entry | Purpose |
 |--------|---------|

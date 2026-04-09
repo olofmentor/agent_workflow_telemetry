@@ -7,7 +7,7 @@ Default table matches MLflow GenAI trace OTEL spans
 
 Legacy table ``agent_traces.otel_traces`` is not used by this project; override with env vars below.
 
-Requires: pip install requests python-dotenv
+Requires: uv sync (see pyproject.toml); run via uv run
 """
 import os
 import sys
@@ -63,7 +63,7 @@ def main():
     if response.status_code == 200:
         print("✅ Table exists!")
     elif response.status_code == 404:
-        print("❌ Table does not exist. Run `python -m init` or MLflow set_experiment_trace_location() after Terraform creates the schema.")
+        print("❌ Table does not exist. Run `uv run python -m init` or MLflow set_experiment_trace_location() after Terraform creates the schema.")
     elif response.status_code == 403:
         print("⚠️  Permission denied. You may not have access to this catalog/schema.")
         print(f"   Please ask your Databricks admin to grant:")

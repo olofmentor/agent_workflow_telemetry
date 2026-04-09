@@ -29,7 +29,9 @@ The workflow is sequential and uses three logical agents:
 - `observability/` holds OTLP setup ([`observability/otel_sdk.py`](observability/otel_sdk.py)), header parsing, ADK defaults, and session logging ([`readme-logs.md`](readme-logs.md)).
 - `tests/` contains workflow and OTLP export tests.
 - `init/` bootstraps Databricks UC trace tables + MLflow experiment and wires OTEL env (see below).
+- `sql/mlflow_trace_tables/` holds **reference** SQL for UC trace table columns and views (not used to provision tables; see folder README).
 - `terraform/` contains Databricks Terraform **modules** (catalog/schema/SQL warehouse); see `terraform/README.md`.
+- `bicep/` holds optional **Azure** templates (resource group, managed identity, etc.); see `bicep/README.md`. Deploy Azure-side resources first when they supply workspace URL or identities used by Terraform.
 - `scripts/` contains Databricks utility scripts (see scripts/README.md).
 - `input_files/` holds project documentation to summarize.
 
@@ -54,11 +56,11 @@ The workflow expects these environment variables:
 ## Using the workflow
 
 1. Put your project documentation in `./input_files` (or set `DOCUMENTS_DIR`).
-2. Install dependencies: `pip install -r requirements.txt`. To run unit tests, also install `pip install -r requirements-dev.txt` (or `requirements-test.txt` for coverage extras).
+2. Install dependencies with [UV](https://docs.astral.sh/uv/): `uv sync`. For unit tests (and coverage helpers), use `uv sync --all-groups` or `uv sync --group dev` / `--group test` as needed.
 3. Configure OpenTelemetry for MLflow tracing (see [MLflow + Google ADK](https://mlflow.org/docs/latest/genai/tracing/integrations/listing/google-adk/)):
    - `OTEL_EXPORTER_OTLP_ENDPOINT` – OTLP traces URL (e.g. `.../api/2.0/otel/v1/traces`)
    - `OTEL_EXPORTER_OTLP_HEADERS` – headers (e.g. `x-mlflow-experiment-id=<id>`)
-   - Logs are sent to `.../api/2.0/otel/v1/logs` (same base URL). Requires `opentelemetry-exporter-otlp-proto-http` (included in requirements).
+   - Logs are sent to `.../api/2.0/otel/v1/logs` (same base URL). Requires `opentelemetry-exporter-otlp-proto-http` (declared in `pyproject.toml`).
 4. From the parent directory of this repo, run `adk run SE_workflow_test`.
 5. Provide the user question as the initial message.
 6. If the clarifier asks questions, pass your answers by setting
@@ -80,15 +82,15 @@ The **`init`** package creates the MLflow experiment (if missing), calls `set_ex
 **Option A — one shot from the shell** (loads `.env` from repo root):
 
 ```bash
-python -m init
+uv run python -m init
 ```
 
-Use `python -m init --dry-run` to run MLflow linking steps and print planned `os.environ` updates without applying them. Use `--quiet` for warnings/errors only.
+Use `uv run python -m init --dry-run` to run MLflow linking steps and print planned `os.environ` updates without applying them. Use `--quiet` for warnings/errors only.
 
 **Option B — legacy script** (same implementation):
 
 ```bash
-python scripts/setup_uc_tracing.py
+uv run python scripts/setup_uc_tracing.py
 ```
 
 **Option C — before `adk run`**, set in `.env`:

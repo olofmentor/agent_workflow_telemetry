@@ -4,7 +4,7 @@ These modules provision **Databricks infrastructure** that complements the Pytho
 
 | What Terraform creates | What stays in Python / MLflow API |
 |------------------------|-----------------------------------|
-| Unity Catalog **schema** for trace storage (empty of OTEL tables initially) | Calling `set_experiment_trace_location` / `python -m init` creates **MLflow experiment** and **UC OTEL tables** (`mlflow_experiment_trace_otel_*`) |
+| Unity Catalog **schema** for trace storage (empty of OTEL tables initially) | Calling `set_experiment_trace_location` / `uv run python -m init` creates **MLflow experiment** and **UC OTEL tables** (`mlflow_experiment_trace_otel_*`) |
 | **SQL warehouse** for `MLFLOW_TRACING_SQL_WAREHOUSE_ID` | Experiment id and OTLP headers still come from `init` after linking |
 
 ### Terraform output → environment variables → `init`
@@ -17,7 +17,19 @@ These modules provision **Databricks infrastructure** that complements the Pytho
 | Workspace URL | `DATABRICKS_HOST` | Optional: derive `OTEL_EXPORTER_OTLP_ENDPOINT` when unset |
 | PAT / SP token | `DATABRICKS_TOKEN` (or `Authorization` in headers) | `init.build_trace_configuration_updates` |
 
-After `apply`, set the first three in `.env`, then run `python -m init` to create/link the MLflow experiment and refresh `OTEL_EXPORTER_OTLP_HEADERS` (experiment id + `X-Databricks-UC-Table-Name`). Then start the agent so [`observability/otel_sdk.py`](../observability/otel_sdk.py) reads those variables.
+After `apply`, set the first three in `.env`, then run `uv run python -m init` to create/link the MLflow experiment and refresh `OTEL_EXPORTER_OTLP_HEADERS` (experiment id + `X-Databricks-UC-Table-Name`). Then start the agent so [`observability/otel_sdk.py`](../observability/otel_sdk.py) reads those variables.
+
+## Azure Bicep → Terraform
+
+Use [Bicep](../bicep/) for **Azure subscription/RG-level** resources (managed identities, storage, networking, optional **Azure Databricks workspace** resource). Use **this Terraform stack** only for **Databricks workspace internals** (Unity Catalog schema, SQL warehouse, grants). Avoid defining the same resource in both tools.
+
+| Bicep output (typical) | Where it goes |
+|------------------------|----------------|
+| Databricks workspace URL `https://adb-…azuredatabricks.net` | `databricks_host` in [`examples/agent_tracing`](examples/agent_tracing) (`terraform.tfvars`, copied from `terraform.tfvars.example`) |
+| User-assigned identity **principalId** / **clientId** | Azure RBAC (Key Vault, storage); optionally wire through federated/OIDC in CI. The `databricks` provider in the example still expects a **workspace token** (`token`) unless you change the provider block for AAD/OIDC. |
+| Storage account / container endpoints | Optional `storage_root` for [`modules/uc_catalog`](modules/uc_catalog) when creating a managed catalog |
+
+**Order:** Deploy Bicep (or confirm an existing workspace), copy the workspace URL into Terraform variables, then `terraform apply`. Managed identities from Bicep do not replace `DATABRICKS_TOKEN` in `.env` unless you adopt the matching Azure auth pattern for the Databricks provider.
 
 ## Modules
 
@@ -41,7 +53,7 @@ terraform plan
 terraform apply
 ```
 
-Copy outputs `warehouse_id` and `trace_schema_full_name` into your agent `.env` (`MLFLOW_TRACING_SQL_WAREHOUSE_ID`, `DATABRICKS_CATALOG`, `DATABRICKS_SCHEMA`). Then run `python -m init` (or your app with `AUTO_CONFIGURE_DATABRICKS_TRACING`) to link the experiment and create OTEL tables.
+Copy outputs `warehouse_id` and `trace_schema_full_name` into your agent `.env` (`MLFLOW_TRACING_SQL_WAREHOUSE_ID`, `DATABRICKS_CATALOG`, `DATABRICKS_SCHEMA`). Then run `uv run python -m init` (or your app with `AUTO_CONFIGURE_DATABRICKS_TRACING`) to link the experiment and create OTEL tables.
 
 ## Provider authentication
 

@@ -5,7 +5,7 @@ Check access to the MLflow GenAI OTEL spans table in Unity Catalog.
 Table resolution matches ``scripts/check_databricks_table.py``:
 ``DATABRICKS_CATALOG``, ``DATABRICKS_SCHEMA``, ``DATABRICKS_OTEL_SPANS_TABLE``.
 
-Requires: pip install requests python-dotenv
+Requires: uv sync (see pyproject.toml); run via uv run
 """
 import os
 import sys

@@ -111,41 +111,41 @@ Performance-related tests.
 ```bash
 # Run from project root (parent of SE_workflow_test)
 cd SE_workflow_test
-python3 tests/test_e2e.py
+uv run python tests/test_e2e.py
 ```
 
 ## Running Tests
 
 ### Prerequisites
 ```bash
-pip install -r requirements.txt -r requirements-dev.txt
+uv sync --all-groups
 ```
 
-For coverage and extra helpers: `pip install -r requirements-test.txt` (includes the lines above).
+This installs runtime dependencies plus dev and test groups (pytest, coverage, mocks, `requests`).
 
 ### Run All Unit Tests
 ```bash
-pytest tests/test_workflow.py -v
+uv run pytest tests/test_workflow.py -v
 ```
 
 ### Run Specific Test Class
 ```bash
-pytest tests/test_workflow.py::TestDocumentReaderAgent -v
+uv run pytest tests/test_workflow.py::TestDocumentReaderAgent -v
 ```
 
 ### Run End-to-End Test
 ```bash
-python3 tests/test_e2e.py
+uv run python tests/test_e2e.py
 ```
 
 ### Run OTLP Export Test
 ```bash
-python3 tests/test_otlp_export.py
+uv run python tests/test_otlp_export.py
 ```
 
 ### Run with Coverage
 ```bash
-pytest tests/test_workflow.py --cov=. --cov-report=html
+uv run pytest tests/test_workflow.py --cov=. --cov-report=html
 ```
 
 ## Test Scenarios

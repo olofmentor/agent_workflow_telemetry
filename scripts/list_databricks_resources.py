@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 List available Databricks Unity Catalog schemas and tables.
-Requires: pip install requests python-dotenv
+Requires: uv sync (see pyproject.toml); run via uv run
 """
 import os
 import sys
