@@ -18,4 +18,4 @@ Table properties typically include `otel.schemaVersion=v1` and Delta row-trackin
 
 ## Example queries
 
-See [`queries/README.md`](queries/README.md): per-agent session and token metrics, and span-by-span inputs/outputs for a trace.
+See [`queries/README.md`](queries/README.md): per-agent and per-invocation metrics, errors, tool usage, span latency percentiles, ingestion volume, log/span timelines, and span-by-span inputs/outputs for a trace. The metrics table is optional—skip unless your pipeline actually populates it.
